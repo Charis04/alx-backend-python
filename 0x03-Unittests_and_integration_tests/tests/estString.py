@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock, Mock
 
 
 class TestStrings(unittest.TestCase):
