@@ -9,11 +9,14 @@ from client import GithubOrgClient
 
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient class"""
-    @parameterized.expand([
-        ("google"),
-        ("abc"),
-    ])
-    @patch('client.get_json')
+
+    @parameterized.expand(
+        [
+            ("google"),
+            ("abc"),
+        ]
+    )
+    @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """
         Test that GithubOrgClient.org returns the correct value
@@ -47,7 +50,7 @@ class TestGithubOrgClient(unittest.TestCase):
 
         # Use patch as a context manager to mock the `org` property
         with patch.object(
-            GithubOrgClient, 'org', new_callable=unittest.mock.PropertyMock
+            GithubOrgClient, "org", new_callable=unittest.mock.PropertyMock
         ) as mock_org:
             mock_org.return_value = mocked_payload
 
@@ -60,7 +63,7 @@ class TestGithubOrgClient(unittest.TestCase):
             # Assert that the result matches the expected repos_url
             self.assertEqual(result, mocked_payload["repos_url"])
 
-    @patch('client.get_json')
+    @patch("client.get_json")
     def test_public_repos(self, mocked_get_json):
         """
         Test that GithubOrgClient.public_repos returns the expected result.
@@ -75,10 +78,11 @@ class TestGithubOrgClient(unittest.TestCase):
         mocked_get_json.return_value = mocked_payload
 
         mocked_public_repos_url = "https://api.github.com/orgs/test-org/repos"
-        
+
         with patch.object(
-            GithubOrgClient, '_public_repos_url',
-            new_callable=unittest.mock.PropertyMock
+            GithubOrgClient,
+            "_public_repos_url",
+            new_callable=unittest.mock.PropertyMock,
         ) as mock_public_repos_url:
             mock_public_repos_url.return_value = mocked_public_repos_url
 
@@ -95,5 +99,5 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(result, ["test-repo1", "test-repo3"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
