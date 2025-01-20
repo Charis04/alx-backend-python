@@ -2,9 +2,10 @@
 """Test module for Github Org Client
 """
 import unittest
-from unittest.mock import patch
-from parameterized import parameterized
+from unittest.mock import MagicMock, patch
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -110,6 +111,45 @@ class TestGithubOrgClient(unittest.TestCase):
         """
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected_result)
+
+
+@parameterized_class(
+    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration tests for GithubOrgClient class"""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class method to mock requests.get"""
+        cls.get_patcher = patch('requests.get')
+        cls.mock_get = cls.get_patcher.start()
+
+        # Mock the JSON responses for different URLs
+        def side_effect(url, *args, **kwargs):
+            # Create a mock Response object
+            mock_response = MagicMock()
+            if url == "https://api.github.com/orgs/google":
+                mock_response.json.return_value = cls.org_payload
+            elif url == "https://api.github.com/orgs/google/repos":
+                mock_response.json.return_value = cls.repos_payload
+            else:
+                mock_response.json.return_value = {}
+            return mock_response
+
+        cls.mock_get.side_effect = side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        """Tear down class method to stop the patcher"""
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        """Test the public_repos method"""
+        client = GithubOrgClient("google")
+        self.assertEqual(client.public_repos(), self.expected_repos)
+        self.assertEqual(client.public_repos("apache-2.0"), self.apache2_repos)
 
 
 if __name__ == "__main__":
